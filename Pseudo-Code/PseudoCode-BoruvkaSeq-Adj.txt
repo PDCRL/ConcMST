@@ -1,0 +1,71 @@
+Class Edge:
+    Initialize src = 0, dest = 0, weight = 0
+    Constructor Edge(s, d, w):
+        src = s
+        dest = d
+        weight = w
+
+Class DisjointSet:
+    Initialize parent[0..V-1] = [0, 1, ..., V-1]
+    Initialize rank[0..V-1] = [0, 0, ..., 0]
+
+    Constructor DisjointSet(n):
+        For i from 0 to n-1:
+            parent[i] = i
+
+    Function find(u):
+        If parent[u] != u:
+            parent[u] = find(parent[u]) // Path compression
+        Return parent[u]
+
+    Function merge(x, y):
+        rootX = find(x)
+        rootY = find(y)
+        If rootX != rootY:
+            If rank[rootX] < rank[rootY]:
+                parent[rootX] = rootY
+            Else If rank[rootX] > rank[rootY]:
+                parent[rootY] = rootX
+            Else:
+                parent[rootY] = rootX
+                rank[rootX] = rank[rootX] + 1
+
+Class MSTGraph(V, E):
+    Initialize V = V, E = E, mstWeight = 0
+    Initialize adj as map of vertex to list of Edges
+    Initialize mstEdges as empty list
+
+    Function addEdge(src, dest, weight):
+        Append Edge(src, dest, weight) to adj[src]
+        Append Edge(dest, src, weight) to adj[dest]
+
+    Function boruvkaMST():
+        Initialize DisjointSet ds(V)
+        Initialize numTrees = V
+
+        While numTrees > 1:
+            // Step 1: Reset cheapest map
+            Initialize cheapest as map of vertex to Edge(-1, -1, ∞)
+
+            // Step 2: Find cheapest edge for each component
+            For each vertex u from 0 to V-1:
+                For each edge in adj[u]:
+                    set1 = ds.find(edge.src)
+                    set2 = ds.find(edge.dest)
+                    If set1 != set2:
+                        If edge.weight < cheapest[set1].weight:
+                            cheapest[set1] = edge
+
+            // Step 3: Add cheapest edges to MST and merge components
+            For each component comp in cheapest:
+                edge = cheapest[comp]
+                If edge.src != -1:
+                    set1 = ds.find(edge.src)
+                    set2 = ds.find(edge.dest)
+                    If set1 != set2: // Confirm components are different
+                        Append edge to mstEdges
+                        mstWeight += edge.weight
+                        ds.merge(set1, set2)
+                        numTrees = numTrees - 1
+        
+        Return mstEdges, mstWeight

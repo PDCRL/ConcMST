@@ -1,0 +1,4 @@
+*.o
+*.results
+.vscode
+a.out
